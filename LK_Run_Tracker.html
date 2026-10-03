@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111111">
+<title>LK Runs</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;min-height:100vh}
+main{max-width:520px;margin:auto;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 20px)}
+h1{text-align:center;font-size:28px;margin:4px 0 22px}
+.card{background:#1d1d1f;border-radius:18px;padding:18px;margin-bottom:14px}
+.label{text-align:center;color:#aaa;font-size:14px}
+.big{text-align:center;font-size:72px;font-weight:700;line-height:1.05;margin:4px 0 16px}
+button{border:0;border-radius:16px;background:#fff;color:#111;font-size:24px;font-weight:700;width:100%;padding:20px;touch-action:manipulation}
+button:active{transform:scale(.98)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.small{background:#303033;color:#fff;font-size:17px;padding:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;text-align:center;gap:12px}
+.stat b{display:block;font-size:27px;margin-top:3px}
+.hr{display:flex;gap:8px;margin-top:12px}
+.hr button{font-size:16px;padding:12px}
+.reset{background:#303033;color:#aaa;font-size:15px;padding:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>LK RUNS</h1>
+
+<div class="card">
+  <div class="label">RUNS THIS SESSION</div>
+  <div class="big" id="session">0</div>
+  <button onclick="addRun()">+ 1 RUN</button>
+  <div class="row">
+    <button class="small" onclick="addRuns(5)">+5</button>
+    <button class="small" onclick="addRuns(10)">+10</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="stats">
+    <div class="stat"><div class="label">TOTAL RUNS</div><b id="total">0</b></div>
+    <div class="stat"><div class="label">RUNS / HOUR</div><b id="rate">—</b></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">HIGH RUNES FOUND</div>
+  <div class="hr">
+    <button class="small" onclick="rune('Sur')">Sur <span id="Sur">0</span></button>
+    <button class="small" onclick="rune('Ber')">Ber <span id="Ber">0</span></button>
+    <button class="small" onclick="rune('Jah')">Jah <span id="Jah">0</span></button>
+    <button class="small" onclick="rune('Lo')">Lo <span id="Lo">0</span></button>
+  </div>
+</div>
+
+<div class="card">
+  <button class="reset" onclick="newSession()">New session</button>
+  <div style="height:8px"></div>
+  <button class="reset" onclick="resetAll()">Reset everything</button>
+</div>
+</main>
+
+<script>
+const KEY="lkTrackerV1";
+let d=JSON.parse(localStorage.getItem(KEY)||'{"total":0,"session":0,"start":null,"runes":{"Sur":0,"Ber":0,"Jah":0,"Lo":0}}');
+
+function save(){localStorage.setItem(KEY,JSON.stringify(d));render()}
+function addRun(){addRuns(1)}
+function addRuns(n){
+ if(!d.start)d.start=Date.now();
+ d.session+=n; d.total+=n; save();
+}
+function rune(r){d.runes[r]++;save()}
+function newSession(){
+ d.session=0; d.start=null;
+ Object.keys(d.runes).forEach(r=>d.runes[r]=0);
+ save();
+}
+function resetAll(){
+ if(confirm("Reset all LK tracking data?")){
+  d={"total":0,"session":0,"start":null,"runes":{"Sur":0,"Ber":0,"Jah":0,"Lo":0}};
+  save();
+ }
+}
+function render(){
+ session.textContent=d.session;
+ total.textContent=d.total;
+ for(const r of Object.keys(d.runes))document.getElementById(r).textContent=d.runes[r];
+ if(d.start && d.session){
+   const hours=(Date.now()-d.start)/3600000;
+   rate.textContent=Math.round(d.session/hours);
+ } else rate.textContent="—";
+}
+render();
+setInterval(render,5000);
+</script>
+</body>
+</html>
